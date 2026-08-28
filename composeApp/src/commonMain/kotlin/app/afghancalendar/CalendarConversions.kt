@@ -38,7 +38,15 @@ fun gregorianMonthLength(y: Int, m: Int): Int = when (m) {
 }
 
 enum class AppLanguage { PERSIAN, ENGLISH }
-enum class MainCalendar { SHAMSI, MILADI }
+enum class MainCalendar { SHAMSI, MILADI, HIJRI }
+
+// Actual Julian day of a Hijri date (accounts for the tabular offset)
+fun hijriDateToJdn(y: Int, m: Int, d: Int): Int = hijriToJdn(y, m, d) - HIJRI_OFFSET
+
+fun hijriMonthLength(y: Int, m: Int): Int {
+    val next = if (m < 12) hijriToJdn(y, m + 1, 1) else hijriToJdn(y + 1, 1, 1)
+    return next - hijriToJdn(y, m, 1)
+}
 
 // Persian weekdays Sunday-start, rightmost Sunday as per screenshot
 val persianWeekdays = arrayOf("یکشنبه","دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه","شنبه")

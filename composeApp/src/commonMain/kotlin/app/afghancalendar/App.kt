@@ -51,6 +51,13 @@ private fun pageToGregorianMonth(page: Int, startYear: Int, startMonth: Int): Pa
     return (totalMonths / 12) to (totalMonths % 12 + 1)
 }
 
+// Maps pager page index -> (Hijri year, month), relative to today's Hijri month
+private fun pageToHijriMonth(page: Int, startYear: Int, startMonth: Int): Pair<Int, Int> {
+    var totalMonths = startYear * 12 + (startMonth - 1) + (page - PAGER_INITIAL_PAGE)
+    if (totalMonths < 144) totalMonths = 144 // Hijri year >= 12
+    return (totalMonths / 12) to (totalMonths % 12 + 1)
+}
+
 // Week start options - user selectable
 enum class WeekStart(val startIdx: Int, val labelFa: String, val labelEn: String) {
     SATURDAY(6, "شنبه", "Saturday"),
@@ -68,6 +75,7 @@ private class AppStrings(
     val mainCalendar: String,
     val shamsi: String,
     val miladi: String,
+    val hijri: String,
     val language: String,
     val themeColor: String,
     val appearance: String,
@@ -88,6 +96,7 @@ private fun stringsFor(language: AppLanguage): AppStrings = if (language == AppL
     mainCalendar = "Main calendar",
     shamsi = "Shamsi",
     miladi = "Miladi",
+    hijri = "Hijri",
     language = "Language",
     themeColor = "Theme color",
     appearance = "Appearance",
@@ -106,6 +115,7 @@ private fun stringsFor(language: AppLanguage): AppStrings = if (language == AppL
     mainCalendar = "تقویم اصلی",
     shamsi = "شمسی",
     miladi = "میلادی",
+    hijri = "هجری",
     language = "زبان",
     themeColor = "رنگ پوسته",
     appearance = "حالت نمایش",
@@ -196,6 +206,7 @@ fun App() {
     ) {
         val todayGregorian = remember { getTodayGregorian() }
         val todayJalali = remember { gregorianToJalali(todayGregorian) }
+        val todayHijri = remember { gregorianToHijri(todayGregorian) }
         val todayJdn = remember { gregorianToJdn(todayGregorian.year, todayGregorian.month, todayGregorian.day) }
 
         // Selection stored as JDN - one source of truth for all calendars
@@ -268,7 +279,9 @@ fun App() {
                         todayJalaliYear = todayJalali.year,
                         todayJalaliMonth = todayJalali.month,
                         todayGregorianYear = todayGregorian.year,
-                        todayGregorianMonth = todayGregorian.month
+                        todayGregorianMonth = todayGregorian.month,
+                        todayHijriYear = todayHijri.year,
+                        todayHijriMonth = todayHijri.month
                     )
                     DetailCard(
                         selectedJdn = selectedJdn,
@@ -311,19 +324,25 @@ private fun MonthCard(
     todayJalaliYear: Int,
     todayJalaliMonth: Int,
     todayGregorianYear: Int,
-    todayGregorianMonth: Int
+    todayGregorianMonth: Int,
+    todayHijriYear: Int,
+    todayHijriMonth: Int
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val isEnglish = language == AppLanguage.ENGLISH
     val isShamsi = mainCalendar == MainCalendar.SHAMSI
+    val isHijri = mainCalendar == MainCalendar.HIJRI
     val vazirmatnFontFamily = VazirmatnFontFamily()
     val interFontFamily = InterFontFamily()
     val s = remember(language) { stringsFor(language) }
 
     // settledPage is read HERE so only this card recomposes when a swipe settles
     val (displayedYear, displayedMonth) = remember(pagerState.settledPage, mainCalendar) {
-        if (isShamsi) pageToJalaliMonth(pagerState.settledPage, todayJalaliYear, todayJalaliMonth)
-        else pageToGregorianMonth(pagerState.settledPage, todayGregorianYear, todayGregorianMonth)
+        when (mainCalendar) {
+            MainCalendar.SHAMSI -> pageToJalaliMonth(pagerState.settledPage, todayJalaliYear, todayJalaliMonth)
+            MainCalendar.MILADI -> pageToGregorianMonth(pagerState.settledPage, todayGregorianYear, todayGregorianMonth)
+            MainCalendar.HIJRI -> pageToHijriMonth(pagerState.settledPage, todayHijriYear, todayHijriMonth)
+        }
     }
 
     fun prevMonth() { scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) } }
@@ -343,7 +362,7 @@ private fun MonthCard(
             englishShort[idx]
         }
         when {
-            isShamsi && !isEnglish -> orderedPersian
+            (isShamsi || isHijri) && !isEnglish -> orderedPersian
             else -> orderedEnglish
         }
     }
@@ -379,12 +398,19 @@ private fun MonthCard(
                 }
                 // Title shows main calendar + secondary calendar month
                 val secondaryText = remember(displayedYear, displayedMonth, mainCalendar) {
-                    if (isShamsi) {
-                        val g = jdnToGregorian(jalaliToJdn(displayedYear, displayedMonth, 15))
-                        "${gregorianMonthNamesEn[g.month]} ${g.year}"
-                    } else {
-                        val j = jdnToJalali(gregorianToJdn(displayedYear, displayedMonth, 15))
-                        "${jalaliMonthNames[j.month]} ${toPersianDigits(j.year)}"
+                    when (mainCalendar) {
+                        MainCalendar.SHAMSI -> {
+                            val g = jdnToGregorian(jalaliToJdn(displayedYear, displayedMonth, 15))
+                            "${gregorianMonthNamesEn[g.month]} ${g.year}"
+                        }
+                        MainCalendar.MILADI -> {
+                            val j = jdnToJalali(gregorianToJdn(displayedYear, displayedMonth, 15))
+                            "${jalaliMonthNames[j.month]} ${toPersianDigits(j.year)}"
+                        }
+                        MainCalendar.HIJRI -> {
+                            val g = jdnToGregorian(hijriDateToJdn(displayedYear, displayedMonth, 15))
+                            "${gregorianMonthNamesEn[g.month]} ${g.year}"
+                        }
                     }
                 }
                 Column(
@@ -392,12 +418,13 @@ private fun MonthCard(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = if (isShamsi)
-                            "${jalaliMonthNames[displayedMonth]} ${toPersianDigits(displayedYear)}"
-                        else
-                            "${englishMonthNamesLong[displayedMonth]} ${displayedYear}",
+                        text = when (mainCalendar) {
+                            MainCalendar.SHAMSI -> "${jalaliMonthNames[displayedMonth]} ${toPersianDigits(displayedYear)}"
+                            MainCalendar.MILADI -> "${englishMonthNamesLong[displayedMonth]} ${displayedYear}"
+                            MainCalendar.HIJRI -> "${hijriMonthNames[displayedMonth]} ${toPersianDigits(displayedYear)}"
+                        },
                         style = MaterialTheme.typography.headlineSmall.copy(
-                            fontFamily = if (isShamsi) vazirmatnFontFamily else interFontFamily
+                            fontFamily = if (isShamsi || isHijri) vazirmatnFontFamily else interFontFamily
                         ),
                         color = colorScheme.onPrimaryContainer,
                         textAlign = TextAlign.Center
@@ -405,7 +432,7 @@ private fun MonthCard(
                     Text(
                         text = secondaryText,
                         style = MaterialTheme.typography.labelMedium.copy(
-                            fontFamily = if (isShamsi) interFontFamily else vazirmatnFontFamily
+                            fontFamily = if (isShamsi || isHijri) interFontFamily else vazirmatnFontFamily
                         ),
                         color = colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
                         textAlign = TextAlign.Center
@@ -425,8 +452,8 @@ private fun MonthCard(
 
             Spacer(Modifier.height(16.dp))
 
-            // Direction follows the calendar (RTL Shamsi, LTR Gregorian)
-            val gridDirection = if (isShamsi) LayoutDirection.Rtl else LayoutDirection.Ltr
+            // Direction follows the calendar (RTL Shamsi/Hijri, LTR Gregorian)
+            val gridDirection = if (isShamsi || isHijri) LayoutDirection.Rtl else LayoutDirection.Ltr
             CompositionLocalProvider(LocalLayoutDirection provides gridDirection) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -437,7 +464,7 @@ private fun MonthCard(
                             Text(
                                 text = name,
                                 style = MaterialTheme.typography.labelSmall.copy(
-                                    fontFamily = if (isShamsi) vazirmatnFontFamily else interFontFamily
+                                    fontFamily = if (isShamsi || isHijri) vazirmatnFontFamily else interFontFamily
                                 ),
                                 color = colorScheme.onPrimaryContainer.copy(alpha = 0.92f),
                                 textAlign = TextAlign.Center,
@@ -461,13 +488,24 @@ private fun MonthCard(
                     key = { it }
                 ) { page ->
                     val (pageYear, pageMonth) = remember(page, mainCalendar) {
-                        if (isShamsi) pageToJalaliMonth(page, todayJalaliYear, todayJalaliMonth)
-                        else pageToGregorianMonth(page, todayGregorianYear, todayGregorianMonth)
+                        when (mainCalendar) {
+                            MainCalendar.SHAMSI -> pageToJalaliMonth(page, todayJalaliYear, todayJalaliMonth)
+                            MainCalendar.MILADI -> pageToGregorianMonth(page, todayGregorianYear, todayGregorianMonth)
+                            MainCalendar.HIJRI -> pageToHijriMonth(page, todayHijriYear, todayHijriMonth)
+                        }
                     }
-                    val firstJdn = if (isShamsi) jalaliToJdn(pageYear, pageMonth, 1) else gregorianToJdn(pageYear, pageMonth, 1)
+                    val firstJdn = when (mainCalendar) {
+                        MainCalendar.SHAMSI -> jalaliToJdn(pageYear, pageMonth, 1)
+                        MainCalendar.MILADI -> gregorianToJdn(pageYear, pageMonth, 1)
+                        MainCalendar.HIJRI -> hijriDateToJdn(pageYear, pageMonth, 1)
+                    }
                     val firstOffset = (weekdayFromJdn(firstJdn) - weekStart.startIdx + 7) % 7
-                    val monthLen = if (isShamsi) jalaliMonthLength(pageYear, pageMonth) else gregorianMonthLength(pageYear, pageMonth)
-                    val dayFont = if (isShamsi) vazirmatnFontFamily else interFontFamily
+                    val monthLen = when (mainCalendar) {
+                        MainCalendar.SHAMSI -> jalaliMonthLength(pageYear, pageMonth)
+                        MainCalendar.MILADI -> gregorianMonthLength(pageYear, pageMonth)
+                        MainCalendar.HIJRI -> hijriMonthLength(pageYear, pageMonth)
+                    }
+                    val dayFont = if (isShamsi || isHijri) vazirmatnFontFamily else interFontFamily
 
                     Column(modifier = Modifier.fillMaxWidth()) {
                         for (row in 0 until 6) {
@@ -482,10 +520,14 @@ private fun MonthCard(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         if (dayNum in 1..monthLen) {
-                                            val dayJdn = if (isShamsi) jalaliToJdn(pageYear, pageMonth, dayNum) else gregorianToJdn(pageYear, pageMonth, dayNum)
+                                            val dayJdn = when (mainCalendar) {
+                                                MainCalendar.SHAMSI -> jalaliToJdn(pageYear, pageMonth, dayNum)
+                                                MainCalendar.MILADI -> gregorianToJdn(pageYear, pageMonth, dayNum)
+                                                MainCalendar.HIJRI -> hijriDateToJdn(pageYear, pageMonth, dayNum)
+                                            }
                                             val isSelected = dayJdn == selectedJdn
                                             val isToday = dayJdn == todayJdn
-                                            val dayText = if (isShamsi) toPersianDigits(dayNum) else dayNum.toString()
+                                            val dayText = if (isShamsi || isHijri) toPersianDigits(dayNum) else dayNum.toString()
                                             if (isSelected) {
                                                 Box(
                                                     modifier = Modifier
@@ -662,9 +704,15 @@ private fun SettingsDialog(
                     SegmentedButton(
                         selected = mainCalendar == MainCalendar.MILADI,
                         onClick = { onMainCalendarChange(MainCalendar.MILADI) },
-                        shape = RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp),
+                        shape = RoundedCornerShape(0.dp),
                         icon = {}
                     ) { Text(s.miladi, style = MaterialTheme.typography.labelMedium) }
+                    SegmentedButton(
+                        selected = mainCalendar == MainCalendar.HIJRI,
+                        onClick = { onMainCalendarChange(MainCalendar.HIJRI) },
+                        shape = RoundedCornerShape(topEnd = 12.dp, bottomEnd = 12.dp),
+                        icon = {}
+                    ) { Text(s.hijri, style = MaterialTheme.typography.labelMedium) }
                 }
 
                 HorizontalDivider(color = colorScheme.outlineVariant.copy(alpha = 0.4f))
@@ -688,51 +736,50 @@ private fun SettingsDialog(
 
                 HorizontalDivider(color = colorScheme.outlineVariant.copy(alpha = 0.4f))
 
-                // Theme color selector
+                // Theme color selector - name under each circle
                 Text(s.themeColor, style = MaterialTheme.typography.titleSmall, color = colorScheme.onSurface)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
                 ) {
                     seedOptions.forEachIndexed { idx, opt ->
                         val isSelected = idx == seedIndex
-                        Box(
-                            modifier = Modifier
-                                .size(56.dp)
-                                .clip(CircleShape)
-                                .background(opt.color)
-                                .border(
-                                    width = if (isSelected) 3.dp else 1.dp,
-                                    color = if (isSelected) colorScheme.primary else colorScheme.outlineVariant,
-                                    shape = CircleShape
-                                )
-                                .clickable { onSeedIndexChange(idx) },
-                            contentAlignment = Alignment.Center
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            if (isSelected) {
-                                Icon(
-                                    Icons.Filled.Check,
-                                    contentDescription = null,
-                                    tint = if (opt.color == AfghanSeeds.Yellow) Color(0xFF221900) else Color.White,
-                                    modifier = Modifier.size(28.dp)
-                                )
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(CircleShape)
+                                    .background(opt.color)
+                                    .border(
+                                        width = if (isSelected) 3.dp else 1.dp,
+                                        color = if (isSelected) colorScheme.primary else colorScheme.outlineVariant,
+                                        shape = CircleShape
+                                    )
+                                    .clickable { onSeedIndexChange(idx) },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (isSelected) {
+                                    Icon(
+                                        Icons.Filled.Check,
+                                        contentDescription = null,
+                                        tint = if (opt.color == AfghanSeeds.Yellow) Color(0xFF221900) else Color.White,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
                             }
+                            Text(
+                                if (isEnglish) opt.nameEn else opt.nameFa,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (isSelected) colorScheme.onSurface else colorScheme.onSurfaceVariant,
+                                fontSize = 10.sp,
+                                textAlign = TextAlign.Center,
+                                maxLines = 1
+                            )
                         }
-                    }
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    seedOptions.forEach { opt ->
-                        Text(
-                            if (isEnglish) opt.nameEn else opt.nameFa,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = colorScheme.onSurfaceVariant,
-                            fontSize = 10.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.weight(1f)
-                        )
                     }
                 }
 

@@ -24,11 +24,11 @@ data class SeedOption(
 )
 
 val seedOptions = listOf(
-    SeedOption("Afghan Yellow", "زرد افغان", AfghanSeeds.Yellow),
-    SeedOption("Lapis Lazuli", "لاجورد", AfghanSeeds.Lapis),
-    SeedOption("Pomegranate", "انار", AfghanSeeds.Pomegranate),
-    SeedOption("Deep Teal", "سبز تیره", AfghanSeeds.Teal),
-    SeedOption("Desert Sand", "ریگ صحرا", AfghanSeeds.Desert),
+    SeedOption("Yellow", "زرد", AfghanSeeds.Yellow),
+    SeedOption("Blue", "آبی", AfghanSeeds.Lapis),
+    SeedOption("Red", "سرخ", AfghanSeeds.Pomegranate),
+    SeedOption("Green", "سبز", AfghanSeeds.Teal),
+    SeedOption("Brown", "قهوه‌ای", AfghanSeeds.Desert),
 )
 
 enum class ThemeMode { LIGHT, DARK, SYSTEM }

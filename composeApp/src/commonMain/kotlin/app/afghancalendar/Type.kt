@@ -1,4 +1,4 @@
-package app.afghancalendar
+﻿package app.afghancalendar
 
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
@@ -30,25 +30,23 @@ fun InterFontFamily(): FontFamily = FontFamily(
     Font(Res.font.Inter_Bold, FontWeight.Bold)
 )
 
-// Default Persian typography - Vazirmatn
-@Composable
-fun AppTypography(): Typography {
-    val vazirmatn = VazirmatnFontFamily()
+// Typography driven by the selected font family (Vazirmatn for Persian, Inter for English)
+fun AppTypography(font: FontFamily): Typography {
     return Typography(
-    displayLarge = Typography().displayLarge.copy(fontFamily = vazirmatn, fontWeight = FontWeight.Bold, letterSpacing = (-0.25).sp),
-    displayMedium = Typography().displayMedium.copy(fontFamily = vazirmatn, fontWeight = FontWeight.Bold),
-    displaySmall = Typography().displaySmall.copy(fontFamily = vazirmatn, fontWeight = FontWeight.Medium),
-    headlineLarge = Typography().headlineLarge.copy(fontFamily = vazirmatn, fontWeight = FontWeight.Medium),
-    headlineMedium = Typography().headlineMedium.copy(fontFamily = vazirmatn, fontWeight = FontWeight.Medium),
-    headlineSmall = Typography().headlineSmall.copy(fontFamily = vazirmatn, fontWeight = FontWeight.SemiBold),
-    titleLarge = Typography().titleLarge.copy(fontFamily = vazirmatn, fontWeight = FontWeight.SemiBold, fontSize = 22.sp),
-    titleMedium = Typography().titleMedium.copy(fontFamily = vazirmatn, fontWeight = FontWeight.Medium, fontSize = 16.sp),
-    titleSmall = Typography().titleSmall.copy(fontFamily = vazirmatn, fontWeight = FontWeight.Medium, letterSpacing = 0.1.sp),
-    bodyLarge = Typography().bodyLarge.copy(fontFamily = vazirmatn, fontWeight = FontWeight.Normal),
-    bodyMedium = Typography().bodyMedium.copy(fontFamily = vazirmatn, fontWeight = FontWeight.Normal),
-    bodySmall = Typography().bodySmall.copy(fontFamily = vazirmatn, fontWeight = FontWeight.Normal),
-    labelLarge = Typography().labelLarge.copy(fontFamily = vazirmatn, fontWeight = FontWeight.Medium),
-    labelMedium = Typography().labelMedium.copy(fontFamily = vazirmatn, fontWeight = FontWeight.Medium),
-    labelSmall = Typography().labelSmall.copy(fontFamily = vazirmatn, fontWeight = FontWeight.Medium, letterSpacing = 0.5.sp)
+    displayLarge = Typography().displayLarge.copy(fontFamily = font, fontWeight = FontWeight.Bold, letterSpacing = (-0.25).sp),
+    displayMedium = Typography().displayMedium.copy(fontFamily = font, fontWeight = FontWeight.Bold),
+    displaySmall = Typography().displaySmall.copy(fontFamily = font, fontWeight = FontWeight.Medium),
+    headlineLarge = Typography().headlineLarge.copy(fontFamily = font, fontWeight = FontWeight.Medium),
+    headlineMedium = Typography().headlineMedium.copy(fontFamily = font, fontWeight = FontWeight.Medium),
+    headlineSmall = Typography().headlineSmall.copy(fontFamily = font, fontWeight = FontWeight.SemiBold),
+    titleLarge = Typography().titleLarge.copy(fontFamily = font, fontWeight = FontWeight.SemiBold, fontSize = 22.sp),
+    titleMedium = Typography().titleMedium.copy(fontFamily = font, fontWeight = FontWeight.Medium, fontSize = 16.sp),
+    titleSmall = Typography().titleSmall.copy(fontFamily = font, fontWeight = FontWeight.Medium, letterSpacing = 0.1.sp),
+    bodyLarge = Typography().bodyLarge.copy(fontFamily = font, fontWeight = FontWeight.Normal),
+    bodyMedium = Typography().bodyMedium.copy(fontFamily = font, fontWeight = FontWeight.Normal),
+    bodySmall = Typography().bodySmall.copy(fontFamily = font, fontWeight = FontWeight.Normal),
+    labelLarge = Typography().labelLarge.copy(fontFamily = font, fontWeight = FontWeight.Medium),
+    labelMedium = Typography().labelMedium.copy(fontFamily = font, fontWeight = FontWeight.Medium),
+    labelSmall = Typography().labelSmall.copy(fontFamily = font, fontWeight = FontWeight.Medium, letterSpacing = 0.5.sp)
     )
 }

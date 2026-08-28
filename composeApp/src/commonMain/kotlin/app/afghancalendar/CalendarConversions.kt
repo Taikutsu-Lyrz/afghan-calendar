@@ -23,6 +23,22 @@ val hijriMonthNames = arrayOf(
 )
 val hijriMonthNamesShort = hijriMonthNames
 val gregorianMonthNamesEn = arrayOf("", "Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
+val gregorianMonthNamesFa = arrayOf("", "جنوری","فبروری","مارچ","اپریل","می","جون","جولای","اگست","سپتمبر","اکتوبر","نومبر","دسمبر")
+val englishMonthNamesLong = arrayOf("", "January","February","March","April","May","June","July","August","September","October","November","December")
+
+// English weekday names, index 0 = Sunday ... 6 = Saturday
+val englishWeekdays = arrayOf("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday")
+val englishWeekdaysShort = arrayOf("Sun","Mon","Tue","Wed","Thu","Fri","Sat")
+
+fun gregorianMonthLength(y: Int, m: Int): Int = when (m) {
+    1, 3, 5, 7, 8, 10, 12 -> 31
+    4, 6, 9, 11 -> 30
+    2 -> if (y % 4 == 0 && (y % 100 != 0 || y % 400 == 0)) 29 else 28
+    else -> 30
+}
+
+enum class AppLanguage { PERSIAN, ENGLISH }
+enum class MainCalendar { SHAMSI, MILADI }
 
 // Persian weekdays Sunday-start, rightmost Sunday as per screenshot
 val persianWeekdays = arrayOf("یکشنبه","دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه","شنبه")

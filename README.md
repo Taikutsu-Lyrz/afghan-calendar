@@ -22,11 +22,11 @@ Fast • Offline • Dari / English • Material 3
 
 ## Screenshots
 
-| Light -- Shamsi | Light -- Shamsi (Blue) | Dark -- Shamsi (Blue) |
+| Light -- Solar Hijri (Hijri Shamsi) | Light -- Solar Hijri (Hijri Shamsi) (Blue) | Dark -- Solar Hijri (Hijri Shamsi) (Blue) |
 |:---:|:---:|:---:|
 | ![Shamsi light](.github/screenshots/shamsi-light.jpg) | ![Shamsi blue light](.github/screenshots/shamsi-blue-light.jpg) | ![Shamsi blue dark](.github/screenshots/shamsi-blue-dark.jpg) |
 
-| Light -- Miladi (Dari) | Light -- Miladi (English) |
+| Light -- lunar Islamic (Hijri) | Light --  Gregorian calendar |
 |:---:|:---:|
 | ![Miladi light, Dari dates](.github/screenshots/miladi-light.jpg) | ![Miladi light, English dates](.github/screenshots/miladi-gregorian-light.jpg) |
 

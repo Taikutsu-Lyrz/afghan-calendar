@@ -1,4 +1,4 @@
-package app.afghancalendar
+﻿package app.afghancalendar
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 
 // Afghan palettes - 5 seeds
 object AfghanSeeds {
-    val Yellow = Color(0xFFFDB813)      // Afghan Yellow default
+    val Yellow = Color(0xFFF8B41D)      // Afghan Yellow default
     val Lapis = Color(0xFF26428B)       // Lapis Lazuli
     val Pomegranate = Color(0xFFC1272D) // Pomegranate
     val Teal = Color(0xFF005F5B)        // Deep Teal
@@ -34,8 +34,11 @@ val seedOptions = listOf(
 enum class ThemeMode { LIGHT, DARK, SYSTEM }
 
 // Hand-crafted schemes per seed - expressive tonal surfaces
-// We keep primaryContainer = seed for saturated month card (expressive look)
-// onPrimaryContainer chosen for contrast (dark text on light yellow, white on dark seeds)
+// primaryContainer = seed color (saturated month card) with white text on top,
+// EXCEPT yellow which needs dark text for contrast (#3D3D3E).
+
+private const val DARK_TEXT = 0xFF3D3D3E
+private const val WHITE_TEXT = 0xFFFFFFFF
 
 fun lightSchemeForSeed(seed: Color): ColorScheme {
     return when (seed) {
@@ -43,14 +46,14 @@ fun lightSchemeForSeed(seed: Color): ColorScheme {
             primary = Color(0xFF7A5900),
             onPrimary = Color.White,
             primaryContainer = AfghanSeeds.Yellow,
-            onPrimaryContainer = Color(0xFF221900),
+            onPrimaryContainer = Color(WHITE_TEXT),
             secondary = Color(0xFF705D2E),
             onSecondary = Color.White,
             secondaryContainer = Color(0xFFFFE08D),
             onSecondaryContainer = Color(0xFF221B00),
             tertiary = Color(0xFF4B6545),
             surface = Color(0xFFFFF8F0),
-            onSurface = Color(0xFF1F1B13),
+            onSurface = Color(DARK_TEXT),
             surfaceVariant = Color(0xFFF0E0C2),
             onSurfaceVariant = Color(0xFF4D4639),
             surfaceContainer = Color(0xFFF5EEE0),
@@ -62,14 +65,14 @@ fun lightSchemeForSeed(seed: Color): ColorScheme {
         AfghanSeeds.Lapis -> lightColorScheme(
             primary = AfghanSeeds.Lapis,
             onPrimary = Color.White,
-            primaryContainer = Color(0xFFDCE1FF),
-            onPrimaryContainer = Color(0xFF001552),
+            primaryContainer = AfghanSeeds.Lapis,
+            onPrimaryContainer = Color(WHITE_TEXT),
             secondary = Color(0xFF5A5D72),
             onSecondary = Color.White,
             secondaryContainer = Color(0xFFDEE1F9),
             tertiary = Color(0xFF705573),
             surface = Color(0xFFFEFBFF),
-            onSurface = Color(0xFF1B1B1F),
+            onSurface = Color(DARK_TEXT),
             surfaceVariant = Color(0xFFE1E2EC),
             onSurfaceVariant = Color(0xFF44464F),
             surfaceContainer = Color(0xFFF0F0F7),
@@ -81,14 +84,14 @@ fun lightSchemeForSeed(seed: Color): ColorScheme {
         AfghanSeeds.Pomegranate -> lightColorScheme(
             primary = AfghanSeeds.Pomegranate,
             onPrimary = Color.White,
-            primaryContainer = Color(0xFFFFDAD6),
-            onPrimaryContainer = Color(0xFF410002),
+            primaryContainer = AfghanSeeds.Pomegranate,
+            onPrimaryContainer = Color(WHITE_TEXT),
             secondary = Color(0xFF775651),
             onSecondary = Color.White,
             secondaryContainer = Color(0xFFFFDAD6),
             tertiary = Color(0xFF715C2E),
             surface = Color(0xFFFFFBFF),
-            onSurface = Color(0xFF22191A),
+            onSurface = Color(DARK_TEXT),
             surfaceVariant = Color(0xFFF5DDDB),
             onSurfaceVariant = Color(0xFF534341),
             surfaceContainer = Color(0xFFFBEAEA),
@@ -100,14 +103,14 @@ fun lightSchemeForSeed(seed: Color): ColorScheme {
         AfghanSeeds.Teal -> lightColorScheme(
             primary = AfghanSeeds.Teal,
             onPrimary = Color.White,
-            primaryContainer = Color(0xFF9CF1E6),
-            onPrimaryContainer = Color(0xFF00201D),
+            primaryContainer = AfghanSeeds.Teal,
+            onPrimaryContainer = Color(WHITE_TEXT),
             secondary = Color(0xFF4A635F),
             onSecondary = Color.White,
             secondaryContainer = Color(0xFFCCE8E3),
             tertiary = Color(0xFF4E6380),
             surface = Color(0xFFF6FAF8),
-            onSurface = Color(0xFF171D1B),
+            onSurface = Color(DARK_TEXT),
             surfaceVariant = Color(0xFFDBE5E0),
             onSurfaceVariant = Color(0xFF3F4946),
             surfaceContainer = Color(0xFFEBEFED),
@@ -119,14 +122,14 @@ fun lightSchemeForSeed(seed: Color): ColorScheme {
         AfghanSeeds.Desert -> lightColorScheme(
             primary = Color(0xFF6B4A2E),
             onPrimary = Color.White,
-            primaryContainer = Color(0xFFFFDBC0),
-            onPrimaryContainer = Color(0xFF2B1700),
+            primaryContainer = AfghanSeeds.Desert,
+            onPrimaryContainer = Color(WHITE_TEXT),
             secondary = Color(0xFF705B41),
             onSecondary = Color.White,
             secondaryContainer = Color(0xFFFADCC6),
             tertiary = Color(0xFF5A6238),
             surface = Color(0xFFFFF8F4),
-            onSurface = Color(0xFF201A12),
+            onSurface = Color(DARK_TEXT),
             surfaceVariant = Color(0xFFF0DFD2),
             onSurfaceVariant = Color(0xFF50443A),
             surfaceContainer = Color(0xFFF8ECDF),
@@ -145,7 +148,7 @@ fun darkSchemeForSeed(seed: Color): ColorScheme {
             primary = Color(0xFFFFD86B),
             onPrimary = Color(0xFF3E2E00),
             primaryContainer = Color(0xFF5C4300),
-            onPrimaryContainer = Color(0xFFFFDE9C),
+            onPrimaryContainer = Color(WHITE_TEXT),
             secondary = Color(0xFFE2C16C),
             onSecondary = Color(0xFF3E2E00),
             secondaryContainer = Color(0xFF564500),
@@ -164,7 +167,7 @@ fun darkSchemeForSeed(seed: Color): ColorScheme {
             primary = Color(0xFFB3C5FF),
             onPrimary = Color(0xFF00287B),
             primaryContainer = Color(0xFF00319E),
-            onPrimaryContainer = Color(0xFFDCE1FF),
+            onPrimaryContainer = Color(WHITE_TEXT),
             secondary = Color(0xFFC2C5DD),
             onSecondary = Color(0xFF2B3042),
             secondaryContainer = Color(0xFF41465A),
@@ -183,7 +186,7 @@ fun darkSchemeForSeed(seed: Color): ColorScheme {
             primary = Color(0xFFFFB4AB),
             onPrimary = Color(0xFF690005),
             primaryContainer = Color(0xFF93000A),
-            onPrimaryContainer = Color(0xFFFFDAD6),
+            onPrimaryContainer = Color(WHITE_TEXT),
             secondary = Color(0xFFE7BDB7),
             onSecondary = Color(0xFF442926),
             secondaryContainer = Color(0xFF5D3F3C),
@@ -202,7 +205,7 @@ fun darkSchemeForSeed(seed: Color): ColorScheme {
             primary = Color(0xFF80D5CB),
             onPrimary = Color(0xFF003731),
             primaryContainer = Color(0xFF00504A),
-            onPrimaryContainer = Color(0xFF9CF1E6),
+            onPrimaryContainer = Color(WHITE_TEXT),
             secondary = Color(0xFFB0CCC7),
             onSecondary = Color(0xFF1C3531),
             secondaryContainer = Color(0xFF324B47),
@@ -221,7 +224,7 @@ fun darkSchemeForSeed(seed: Color): ColorScheme {
             primary = Color(0xFFDEB68E),
             onPrimary = Color(0xFF3E1F00),
             primaryContainer = Color(0xFF5A3A1B),
-            onPrimaryContainer = Color(0xFFFFDBC0),
+            onPrimaryContainer = Color(WHITE_TEXT),
             secondary = Color(0xFFD8BDA3),
             onSecondary = Color(0xFF3E2D1E),
             secondaryContainer = Color(0xFF564333),

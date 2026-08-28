@@ -1,10 +1,53 @@
+# Gradle
 .gradle/
 build/
 **/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE - IntelliJ/Android Studio
 .idea/
 *.iml
-local.properties
-.opencode/node_modules/
+*.iws
+*.ipr
+.idea/caches/
+.idea/modules.xml
+.idea/workspace.xml
+out/
+.navigation/
+captures/
+
+# Kotlin
 .kotlin/
+kotlin-js-store/
+
+# Android
+local.properties
+*.apk
+*.aab
+*.ap_
+*.dex
+bin/
+gen/
+release/
+key.properties
+*.jks
+*.keystore
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
 *.log
+
+# Claude/opencode local
+.opencode/node_modules/
+.claude*
+CLAUDE.md
+
+# Compose/desktop
+composeApp/build/compose/binaries/
+
+# Screenshots/tooling artifacts
 desktop-ui-screenshot.webp

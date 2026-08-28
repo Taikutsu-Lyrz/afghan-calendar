@@ -542,7 +542,6 @@ private fun MonthCard(
                                                         text = dayText,
                                                         color = colorScheme.onSurface,
                                                         style = MaterialTheme.typography.titleMedium.copy(fontFamily = dayFont),
-                                                        fontWeight = FontWeight.Bold,
                                                         fontSize = 16.sp
                                                     )
                                                 }

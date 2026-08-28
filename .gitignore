@@ -41,10 +41,26 @@ Desktop.ini
 # Logs
 *.log
 
-# Claude/opencode local
-.opencode/node_modules/
+# AI tooling local config
+.opencode/
+opencode.json
 .claude*
 CLAUDE.md
+AGENTS.md
+
+# Local prompts, notes and reports
+PROMPT*.md
+prompt*.md
+NOTES*.md
+TODO*.md
+*REPORT*.md
+report*.md
+*_report.md
+
+# Local design references and scratch images
+reference*.png
+reference*.jpg
+scratch/
 
 # Compose/desktop
 composeApp/build/compose/binaries/

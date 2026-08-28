@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🗓️ Afghan Calendar
+# Afghan Calendar
 
-**A beautiful, offline-first calendar app for Afghanistan — Shamsi, Miladi & Hijri in one place.**
+**A beautiful, offline-first calendar app for Afghanistan -- Shamsi, Miladi & Hijri in one place.**
 
 Fast • Offline • Dari / English • Material 3
 
@@ -10,33 +10,33 @@ Fast • Offline • Dari / English • Material 3
 
 ---
 
-## ✨ Features
+## Features
 
-- **📅 Three calendars, one app** — Shamsi (Jalali), Miladi (Gregorian) and Hijri (Qamari) side by side. Pick any of them as your main calendar and swipe through its months.
-- **👆 Swipeable months** — flick left or right to change months, tap any day to see it in all three calendars at once.
-- **🎨 5 Afghan theme colors** — Yellow, Blue, Red, Green and Brown with Light / Dark / System appearance.
-- **🌐 Dari & English** — switch the whole interface between دری/فارسی and English.
-- **🗓️ Flexible week start** — start the week on Saturday (Afghan convention), Sunday or Monday.
-- **⚡ Works fully offline** — no internet, no accounts, no tracking. All date math happens on your device.
-- **📱 Modern Material 3 design** — smooth, expressive, and responsive on any screen size.
+- **Three calendars, one app** -- Shamsi (Jalali), Miladi (Gregorian) and Hijri (Qamari) side by side. Pick any of them as your main calendar and swipe through its months.
+- **Swipeable months** -- flick left or right to change months, tap any day to see it in all three calendars at once.
+- **5 Afghan theme colors** -- Yellow, Blue, Red, Green and Brown with Light / Dark / System appearance.
+- **Dari & English** -- switch the whole interface between دری/فارسی and English.
+- **Flexible week start** -- start the week on Saturday (Afghan convention), Sunday or Monday.
+- **Works fully offline** -- no internet, no accounts, no tracking. All date math happens on your device.
+- **Modern Material 3 design** -- smooth, expressive, and responsive on any screen size.
 
-## 📸 Screenshots
+## Screenshots
 
-| Light — Shamsi | Light — Miladi (Blue) | Dark — Miladi (Blue) |
+| Light -- Shamsi | Light -- Shamsi (Blue) | Dark -- Shamsi (Blue) |
 |:---:|:---:|:---:|
-| ![Shamsi light](.github/screenshots/main-light.png) | ![Miladi blue light](.github/screenshots/main-gregorian.png) | ![Miladi blue dark](.github/screenshots/main-dark.png) |
+| ![Shamsi light](.github/screenshots/shamsi-light.jpg) | ![Shamsi blue light](.github/screenshots/shamsi-blue-light.jpg) | ![Shamsi blue dark](.github/screenshots/shamsi-blue-dark.jpg) |
 
-| Settings |
-|:---:|
-| ![Settings](.github/screenshots/settings.png) |
+| Light -- Miladi (Dari) | Light -- Miladi (English) |
+|:---:|:---:|
+| ![Miladi light, Dari dates](.github/screenshots/miladi-light.jpg) | ![Miladi light, English dates](.github/screenshots/miladi-gregorian-light.jpg) |
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Install on your phone
 
-1. Download the latest APK from [Releases](../../releases) (or build it yourself — see below)
+1. Download the latest APK from [Releases](../../releases) (or build it yourself -- see below)
 2. Open the file on your Android phone and allow "Install from unknown sources" if asked
-3. Done — the calendar works immediately, no setup needed
+3. Done -- the calendar works immediately, no setup needed
 
 ### Build from source
 
@@ -60,32 +60,32 @@ Install on a connected device via ADB:
 adb install composeApp/build/outputs/apk/debug/composeApp-debug.apk
 ```
 
-## 🗓️ About the calendars
+## About the calendars
 
-- **Shamsi (Jalali)** — the Solar Hijri calendar used in Afghanistan and Iran, with Dari month names (حمل، ثور، جوزا، … حوت). Implemented with the Birashk 2820-year cycle for accuracy across centuries.
-- **Miladi (Gregorian)** — the international calendar, shown with English month names and digits.
-- **Hijri (Qamari)** — the lunar Islamic calendar (محرم … ذوالحجة) using the tabular civil algorithm.
+- **Shamsi (Jalali)** -- the Solar Hijri calendar used in Afghanistan and Iran, with Dari month names (حمل، ثور، جوزا، … حوت). Implemented with the Birashk 2820-year cycle for accuracy across centuries.
+- **Miladi (Gregorian)** -- the international calendar, shown with English month names and digits.
+- **Hijri (Qamari)** -- the lunar Islamic calendar (محرم … ذوالحجة) using the tabular civil algorithm.
 
-All conversions are verified — for example `۶ سنبله ۱۴۰۵ = Friday, August 28, 2026 = ۱۶ ربیع‌الاول ۱۴۴۸`.
+All conversions are verified -- for example `۶ سنبله ۱۴۰۵ = Friday, August 28, 2026 = ۱۶ ربیع‌الاول ۱۴۴۸`.
 
-## 🛠️ Built with
+## Built with
 
-- [Kotlin](https://kotlinlang.org/) & [Compose Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/) — one codebase for Android & Desktop
-- [Material 3](https://m3.material.io/) — modern theming with dynamic light/dark palettes
+- [Kotlin](https://kotlinlang.org/) & [Compose Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/) -- one codebase for Android & Desktop
+- [Material 3](https://m3.material.io/) -- modern theming with dynamic light/dark palettes
 - [Vazirmatn](https://github.com/rastikerdar/vazirmatn) & [Inter](https://fonts.google.com/specimen/Inter) fonts for crisp Dari and English text
 
-## 🤝 Contributing
+## Contributing
 
 Found a bug or want a feature? Issues and pull requests are welcome!
 
-## 📄 License
+## License
 
-This project is open source — see the repo for details.
+This project is open source -- see the repo for details.
 
 <div align="center">
 
-**Made with ❤️ for Afghanistan**
+**Made with love for Afghanistan**
 
-⭐ Star this repo if you find it useful!
+Star this repo if you find it useful!
 
 </div>

@@ -5,6 +5,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,6 +30,22 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
+
+// Pager window: 24000 pages, current month centered
+private const val PAGER_PAGE_COUNT = 24000
+private const val PAGER_INITIAL_PAGE = 12000
+
+// Maps a pager page index to (Jalali year, month), relative to the given start month
+private fun pageToJalaliMonth(page: Int, startYear: Int, startMonth: Int): Pair<Int, Int> {
+    val monthsFromStart = page - PAGER_INITIAL_PAGE
+    var totalMonths = startYear * 12 + (startMonth - 1) + monthsFromStart
+    // Jalali year 0 does not exist in this algorithm; clamp to >= 1
+    if (totalMonths < 12) totalMonths = 12
+    val year = totalMonths / 12
+    val month = totalMonths % 12 + 1
+    return year to month
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,41 +74,20 @@ fun App() {
         val todayGregorian = remember { getTodayGregorian() }
         val todayJalali = remember { gregorianToJalali(todayGregorian) }
 
-        var displayedYear by remember { mutableStateOf(todayJalali.year) }
-        var displayedMonth by remember { mutableStateOf(todayJalali.month) }
         var selectedDate by remember { mutableStateOf(todayJalali) }
 
         val selectedGregorian = remember(selectedDate) { jalaliToGregorian(selectedDate) }
         val selectedHijri = remember(selectedGregorian) { gregorianToHijri(selectedGregorian) }
         val selectedWeekday = remember(selectedDate) { weekdayFromJalali(selectedDate) }
 
-        fun prevMonth() {
-            var y = displayedYear
-            var m = displayedMonth - 1
-            if (m < 1) { m = 12; y-- }
-            displayedYear = y
-            displayedMonth = m
-            val len = jalaliMonthLength(y, m)
-            val d = minOf(selectedDate.day, len)
-            selectedDate = JalaliDate(y, m, d)
-        }
-        fun nextMonth() {
-            var y = displayedYear
-            var m = displayedMonth + 1
-            if (m > 12) { m = 1; y++ }
-            displayedYear = y
-            displayedMonth = m
-            val len = jalaliMonthLength(y, m)
-            val d = minOf(selectedDate.day, len)
-            selectedDate = JalaliDate(y, m, d)
-        }
+        // Swipeable month pager: each page is one Jalali month
+        val pagerState = rememberPagerState(initialPage = PAGER_INITIAL_PAGE) { PAGER_PAGE_COUNT }
+        val scope = rememberCoroutineScope()
+        fun pageMonth(page: Int): Pair<Int, Int> = pageToJalaliMonth(page, todayJalali.year, todayJalali.month)
+        val (displayedYear, displayedMonth) = remember(pagerState.currentPage) { pageMonth(pagerState.currentPage) }
 
-        LaunchedEffect(selectedDate) {
-            if (selectedDate.year != displayedYear || selectedDate.month != displayedMonth) {
-                displayedYear = selectedDate.year
-                displayedMonth = selectedDate.month
-            }
-        }
+        fun prevMonth() { scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) } }
+        fun nextMonth() { scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) } }
 
         Scaffold(
             containerColor = colorScheme.surface,
@@ -134,7 +131,7 @@ fun App() {
                         .widthIn(max = 480.dp)
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = 16.dp, vertical = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // === Month Card - primaryContainer tonal ===
@@ -203,83 +200,92 @@ fun App() {
                                         Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
                                             Text(
                                                 text = name,
-                                                style = MaterialTheme.typography.labelMedium.copy(fontFamily = vazirmatnFontFamily),
+                                                style = MaterialTheme.typography.labelSmall.copy(fontFamily = vazirmatnFontFamily),
                                                 color = colorScheme.onPrimaryContainer.copy(alpha = 0.92f),
                                                 textAlign = TextAlign.Center,
                                                 maxLines = 1,
-                                                fontSize = 13.sp
+                                                fontSize = 10.sp
                                             )
                                         }
                                     }
                                 }
                             }
 
-                            Spacer(Modifier.height(12.dp))
+                            Spacer(Modifier.height(8.dp))
 
-                            // Grid 6x7
+                            // Swipeable month grid pager
                             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                                val firstJdn = jalaliToJdn(displayedYear, displayedMonth, 1)
-                                val firstWeekday = weekdayFromJdn(firstJdn) // Sun 0
-                                val weekStartIdx = if (weekStartSaturday) 6 else 0
-                                val firstOffset = (firstWeekday - weekStartIdx + 7) % 7
-                                val monthLen = jalaliMonthLength(displayedYear, displayedMonth)
-                                val todayJdn = gregorianToJdn(todayGregorian.year, todayGregorian.month, todayGregorian.day)
+                                HorizontalPager(
+                                    state = pagerState,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.Top,
+                                    beyondViewportPageCount = 1,
+                                    key = { it }
+                                ) { page ->
+                                    val (pageYear, pageMonth) = remember(page) { pageMonth(page) }
+                                    val firstJdn = jalaliToJdn(pageYear, pageMonth, 1)
+                                    val firstWeekday = weekdayFromJdn(firstJdn) // Sun 0
+                                    val weekStartIdx = if (weekStartSaturday) 6 else 0
+                                    val firstOffset = (firstWeekday - weekStartIdx + 7) % 7
+                                    val monthLen = jalaliMonthLength(pageYear, pageMonth)
+                                    val todayJdn = gregorianToJdn(todayGregorian.year, todayGregorian.month, todayGregorian.day)
 
-                                Column(modifier = Modifier.fillMaxWidth()) {
-                                    for (row in 0 until 6) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceEvenly
-                                        ) {
-                                            for (col in 0 until 7) {
-                                                val pos = row * 7 + col
-                                                val dayNum = pos - firstOffset + 1
-                                                Box(
-                                                    modifier = Modifier.weight(1f).aspectRatio(1f),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    if (dayNum in 1..monthLen) {
-                                                        val isSelected = selectedDate.year == displayedYear && selectedDate.month == displayedMonth && selectedDate.day == dayNum
-                                                        val jdn = jalaliToJdn(displayedYear, displayedMonth, dayNum)
-                                                        val isToday = jdn == todayJdn
-                                                        if (isSelected) {
-                                                            Box(
-                                                                modifier = Modifier
-                                                                    .size(40.dp)
-                                                                    .clip(CircleShape)
-                                                                    .background(colorScheme.surface)
-                                                                    .border(1.dp, colorScheme.outlineVariant.copy(alpha = 0.3f), CircleShape)
-                                                                    .clickable { selectedDate = JalaliDate(displayedYear, displayedMonth, dayNum) },
-                                                                contentAlignment = Alignment.Center
-                                                            ) {
-                                                                Text(
-                                                                    text = toPersianDigits(dayNum),
-                                                                    color = colorScheme.onSurface,
-                                                                    style = MaterialTheme.typography.titleMedium.copy(fontFamily = vazirmatnFontFamily),
-                                                                    fontWeight = FontWeight.Bold,
-                                                                    fontSize = 16.sp
-                                                                )
-                                                            }
-                                                        } else {
-                                                            Box(
-                                                                modifier = Modifier
-                                                                    .size(40.dp)
-                                                                    .clip(CircleShape)
-                                                                    .clickable { selectedDate = JalaliDate(displayedYear, displayedMonth, dayNum) },
-                                                                contentAlignment = Alignment.Center
-                                                            ) {
-                                                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Column(modifier = Modifier.fillMaxWidth()) {
+                                        for (row in 0 until 6) {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceEvenly
+                                            ) {
+                                                for (col in 0 until 7) {
+                                                    val pos = row * 7 + col
+                                                    val dayNum = pos - firstOffset + 1
+                                                    Box(
+                                                        modifier = Modifier.weight(1f).aspectRatio(1f),
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        if (dayNum in 1..monthLen) {
+                                                            val isSelected = selectedDate.year == pageYear && selectedDate.month == pageMonth && selectedDate.day == dayNum
+                                                            val jdn = jalaliToJdn(pageYear, pageMonth, dayNum)
+                                                            val isToday = jdn == todayJdn
+                                                            if (isSelected) {
+                                                                Box(
+                                                                    modifier = Modifier
+                                                                        .size(40.dp)
+                                                                        .clip(CircleShape)
+                                                                        .background(colorScheme.surface)
+                                                                        .border(1.dp, colorScheme.outlineVariant.copy(alpha = 0.3f), CircleShape)
+                                                                        .clickable { selectedDate = JalaliDate(pageYear, pageMonth, dayNum) },
+                                                                    contentAlignment = Alignment.Center
+                                                                ) {
                                                                     Text(
                                                                         text = toPersianDigits(dayNum),
-                                                                        color = colorScheme.onPrimaryContainer,
-                                                                        style = MaterialTheme.typography.bodyMedium.copy(fontFamily = vazirmatnFontFamily),
-                                                                        fontSize = 15.sp
+                                                                        color = colorScheme.onSurface,
+                                                                        style = MaterialTheme.typography.titleMedium.copy(fontFamily = vazirmatnFontFamily),
+                                                                        fontWeight = FontWeight.Bold,
+                                                                        fontSize = 16.sp
                                                                     )
-                                                                    if (isToday) {
-                                                                        Box(
-                                                                            Modifier.padding(top = 2.dp).size(5.dp).clip(CircleShape)
-                                                                                .background(colorScheme.onPrimaryContainer.copy(alpha = 0.95f))
+                                                                }
+                                                            } else {
+                                                                Box(
+                                                                    modifier = Modifier
+                                                                        .size(40.dp)
+                                                                        .clip(CircleShape)
+                                                                        .clickable { selectedDate = JalaliDate(pageYear, pageMonth, dayNum) },
+                                                                    contentAlignment = Alignment.Center
+                                                                ) {
+                                                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                                        Text(
+                                                                            text = toPersianDigits(dayNum),
+                                                                            color = colorScheme.onPrimaryContainer,
+                                                                            style = MaterialTheme.typography.bodyMedium.copy(fontFamily = vazirmatnFontFamily),
+                                                                            fontSize = 15.sp
                                                                         )
+                                                                        if (isToday) {
+                                                                            Box(
+                                                                                Modifier.padding(top = 2.dp).size(5.dp).clip(CircleShape)
+                                                                                    .background(colorScheme.onPrimaryContainer.copy(alpha = 0.95f))
+                                                                            )
+                                                                        }
                                                                     }
                                                                 }
                                                             }
@@ -315,166 +321,121 @@ fun App() {
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
                             )
-                            Text(
-                                text = "${toPersianDigits(selectedDate.day)} ${jalaliMonthNames[selectedDate.month]} ${toPersianDigits(selectedDate.year)}  •  ${selectedGregorian.day} ${gregorianMonthNamesEn[selectedGregorian.month]} ${selectedGregorian.year}  •  ${toPersianDigits(selectedHijri.day)} ${hijriMonthNames[selectedHijri.month]}",
-                                style = MaterialTheme.typography.labelSmall.copy(fontFamily = vazirmatnFontFamily),
-                                color = colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
-                            )
                             HorizontalDivider(color = colorScheme.outlineVariant.copy(alpha = 0.5f), modifier = Modifier.padding(bottom = 16.dp))
 
                             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    // Solar (rightmost) - stacked month top / day / year, same style as Gregorian, Vazirmatn, no label
+                                    // Solar (Jalali) date - first column
                                     Column(
                                         modifier = Modifier.weight(1f),
                                         horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                        verticalArrangement = Arrangement.spacedBy(2.dp)
                                     ) {
-                                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(1.dp)) {
-                                            Text(
-                                                text = jalaliMonthNames[selectedDate.month],
-                                                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = vazirmatnFontFamily),
-                                                color = colorScheme.onSurfaceVariant,
-                                                textAlign = TextAlign.Center
-                                            )
-                                            Text(
-                                                text = toPersianDigitsPadded(selectedDate.day, 2),
-                                                style = MaterialTheme.typography.titleLarge.copy(fontFamily = vazirmatnFontFamily),
-                                                fontWeight = FontWeight.Bold,
-                                                color = colorScheme.onSurface,
-                                                fontSize = 22.sp,
-                                                textAlign = TextAlign.Center
-                                            )
-                                        }
+                                        Text(
+                                            text = toPersianDigitsPadded(selectedDate.day, 2),
+                                            color = colorScheme.onSurface,
+                                            fontFamily = vazirmatnFontFamily,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 18.sp,
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 1
+                                        )
+                                        Text(
+                                            text = jalaliMonthNames[selectedDate.month],
+                                            color = colorScheme.onSurface,
+                                            fontFamily = vazirmatnFontFamily,
+                                            fontWeight = FontWeight.Medium,
+                                            fontSize = 14.sp,
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 1
+                                        )
                                         Text(
                                             text = toPersianDigits(selectedDate.year),
-                                            style = MaterialTheme.typography.bodySmall.copy(fontFamily = vazirmatnFontFamily),
-                                            color = colorScheme.onSurfaceVariant,
-                                            textAlign = TextAlign.Center
-                                        )
-                                        AssistChip(
-                                            onClick = {},
-                                            label = {
-                                                Text(
-                                                    "${toPersianDigitsPadded(selectedDate.year,4)}/${toPersianDigitsPadded(selectedDate.month,2)}/${toPersianDigitsPadded(selectedDate.day,2)}",
-                                                    style = MaterialTheme.typography.labelSmall.copy(fontFamily = vazirmatnFontFamily),
-                                                    textAlign = TextAlign.Center
-                                                )
-                                            },
-                                            colors = AssistChipDefaults.assistChipColors(
-                                                containerColor = colorScheme.surfaceContainerHighest,
-                                                labelColor = colorScheme.onSurface
-                                            ),
-                                            border = AssistChipDefaults.assistChipBorder(enabled = true, borderColor = colorScheme.outlineVariant.copy(alpha = 0.4f))
+                                            color = colorScheme.onSurface,
+                                            fontFamily = vazirmatnFontFamily,
+                                            fontWeight = FontWeight.Normal,
+                                            fontSize = 13.sp,
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 1
                                         )
                                     }
-
-                                    // Gregorian (center) - stacked month top / day / year, Inter, no label
+                                    // Gregorian date - middle column (Latin numerals, Inter)
                                     Column(
                                         modifier = Modifier.weight(1f),
                                         horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                        verticalArrangement = Arrangement.spacedBy(2.dp)
                                     ) {
-                                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(1.dp)) {
-                                            Text(
-                                                text = gregorianMonthNamesEn[selectedGregorian.month],
-                                                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = interFontFamily),
-                                                color = colorScheme.onSurfaceVariant,
-                                                textAlign = TextAlign.Center
-                                            )
-                                            Text(
-                                                text = selectedGregorian.day.toString(),
-                                                style = MaterialTheme.typography.titleLarge.copy(fontFamily = interFontFamily),
-                                                fontWeight = FontWeight.Bold,
-                                                color = colorScheme.onSurface,
-                                                fontSize = 22.sp,
-                                                textAlign = TextAlign.Center
-                                            )
-                                        }
+                                        Text(
+                                            text = selectedGregorian.day.toString().padStart(2, '0'),
+                                            color = colorScheme.onSurface,
+                                            fontFamily = interFontFamily,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 18.sp,
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 1
+                                        )
+                                        Text(
+                                            text = gregorianMonthNamesEn[selectedGregorian.month],
+                                            color = colorScheme.onSurface,
+                                            fontFamily = interFontFamily,
+                                            fontWeight = FontWeight.Medium,
+                                            fontSize = 14.sp,
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 1
+                                        )
                                         Text(
                                             text = selectedGregorian.year.toString(),
-                                            style = MaterialTheme.typography.bodySmall.copy(fontFamily = interFontFamily),
-                                            color = colorScheme.onSurfaceVariant,
-                                            textAlign = TextAlign.Center
-                                        )
-                                        AssistChip(
-                                            onClick = {},
-                                            label = {
-                                                Text(
-                                                    "${selectedGregorian.year}/${selectedGregorian.month.toString().padStart(2,'0')}/${selectedGregorian.day.toString().padStart(2,'0')}",
-                                                    style = MaterialTheme.typography.labelSmall.copy(fontFamily = interFontFamily)
-                                                )
-                                            },
-                                            colors = AssistChipDefaults.assistChipColors(
-                                                containerColor = colorScheme.surfaceContainerHighest,
-                                                labelColor = colorScheme.onSurface
-                                            ),
-                                            border = AssistChipDefaults.assistChipBorder(enabled = true, borderColor = colorScheme.outlineVariant.copy(alpha = 0.4f))
+                                            color = colorScheme.onSurface,
+                                            fontFamily = interFontFamily,
+                                            fontWeight = FontWeight.Normal,
+                                            fontSize = 13.sp,
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 1
                                         )
                                     }
-
-                                    // Hijri (leftmost) - stacked month top / day / year, same style, Vazirmatn, no label
+                                    // Hijri date - last column
                                     Column(
                                         modifier = Modifier.weight(1f),
                                         horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                        verticalArrangement = Arrangement.spacedBy(2.dp)
                                     ) {
-                                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(1.dp)) {
-                                            Text(
-                                                text = hijriMonthNames[selectedHijri.month],
-                                                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = vazirmatnFontFamily),
-                                                color = colorScheme.onSurfaceVariant,
-                                                textAlign = TextAlign.Center,
-                                                maxLines = 1
-                                            )
-                                            Text(
-                                                text = toPersianDigits(selectedHijri.day),
-                                                style = MaterialTheme.typography.titleLarge.copy(fontFamily = vazirmatnFontFamily),
-                                                fontWeight = FontWeight.Bold,
-                                                color = colorScheme.onSurface,
-                                                fontSize = 22.sp,
-                                                textAlign = TextAlign.Center
-                                            )
-                                        }
+                                        Text(
+                                            text = toPersianDigitsPadded(selectedHijri.day, 2),
+                                            color = colorScheme.onSurface,
+                                            fontFamily = vazirmatnFontFamily,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 18.sp,
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 1
+                                        )
+                                        Text(
+                                            text = hijriMonthNames[selectedHijri.month],
+                                            color = colorScheme.onSurface,
+                                            fontFamily = vazirmatnFontFamily,
+                                            fontWeight = FontWeight.Medium,
+                                            fontSize = 14.sp,
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 1
+                                        )
                                         Text(
                                             text = toPersianDigits(selectedHijri.year),
-                                            style = MaterialTheme.typography.bodySmall.copy(fontFamily = vazirmatnFontFamily),
-                                            color = colorScheme.onSurfaceVariant,
-                                            textAlign = TextAlign.Center
-                                        )
-                                        AssistChip(
-                                            onClick = {},
-                                            label = {
-                                                Text(
-                                                    "${toPersianDigits(selectedHijri.year)}/${toPersianDigitsPadded(selectedHijri.month,2)}/${toPersianDigitsPadded(selectedHijri.day,2)}",
-                                                    style = MaterialTheme.typography.labelSmall.copy(fontFamily = vazirmatnFontFamily)
-                                                )
-                                            },
-                                            colors = AssistChipDefaults.assistChipColors(
-                                                containerColor = colorScheme.surfaceContainerHighest,
-                                                labelColor = colorScheme.onSurface
-                                            ),
-                                            border = AssistChipDefaults.assistChipBorder(enabled = true, borderColor = colorScheme.outlineVariant.copy(alpha = 0.4f))
+                                            color = colorScheme.onSurface,
+                                            fontFamily = vazirmatnFontFamily,
+                                            fontWeight = FontWeight.Normal,
+                                            fontSize = 13.sp,
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 1
                                         )
                                     }
                                 }
                             }
                         }
                     }
-
-                    // Verified footer note
-                    Text(
-                        text = "تأیید: ۶ سنبله ۱۴۰۵ = جمعه ۲۸ آگست ۲۰۲۶ = ۱۶ ربیع‌الاول ۱۴۴۸",
-                        style = MaterialTheme.typography.labelSmall.copy(fontFamily = vazirmatnFontFamily),
-                        color = colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 8.dp)
-                    )
+                    }
                 }
             }
         }

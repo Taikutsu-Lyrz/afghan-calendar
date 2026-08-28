@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Calendar body -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M40,41 h28 a8,8 0 0 1 8,8 v22 a8,8 0 0 1 -8,8 h-28 a8,8 0 0 1 -8,-8 v-22 a8,8 0 0 1 8,-8 z" />
+    <!-- Ring holes -->
+    <path
+        android:fillColor="#F8B41D"
+        android:pathData="M38,49.5 Q38,47 40.5,47 Q43,47 43,49.5 L43,56.5 Q43,59 40.5,59 Q38,59 38,56.5 Z" />
+    <path
+        android:fillColor="#F8B41D"
+        android:pathData="M65,49.5 Q65,47 67.5,47 Q70,47 70,49.5 L70,56.5 Q70,59 67.5,59 Q65,59 65,56.5 Z" />
+    <!-- Header divider -->
+    <path
+        android:fillColor="#F8B41D"
+        android:pathData="M32,63 h44 v3.5 h-44 z" />
+    <!-- Date dots -->
+    <path
+        android:fillColor="#F8B41D"
+        android:pathData="M36.75,72.5 a3.25,3.25 0 1 0 6.5,0 a3.25,3.25 0 1 0 -6.5,0 z" />
+    <path
+        android:fillColor="#F8B41D"
+        android:pathData="M50.75,72.5 a3.25,3.25 0 1 0 6.5,0 a3.25,3.25 0 1 0 -6.5,0 z" />
+    <path
+        android:fillColor="#F8B41D"
+        android:pathData="M64.75,72.5 a3.25,3.25 0 1 0 6.5,0 a3.25,3.25 0 1 0 -6.5,0 z" />
+</vector>

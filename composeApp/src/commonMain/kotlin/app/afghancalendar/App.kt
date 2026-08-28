@@ -329,36 +329,33 @@ fun App() {
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    // Solar (rightmost) - هجری شمسی label above month
+                                    // Solar (rightmost) - stacked month top / day / year, same style as Gregorian, Vazirmatn, no label
                                     Column(
                                         modifier = Modifier.weight(1f),
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         verticalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
-                                        Text(
-                                            "هجری شمسی",
-                                            style = MaterialTheme.typography.labelSmall.copy(fontFamily = vazirmatnFontFamily),
-                                            color = colorScheme.onSurfaceVariant,
-                                            textAlign = TextAlign.Center
-                                        )
-                                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                                            Text(
+                                                text = jalaliMonthNames[selectedDate.month],
+                                                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = vazirmatnFontFamily),
+                                                color = colorScheme.onSurfaceVariant,
+                                                textAlign = TextAlign.Center
+                                            )
                                             Text(
                                                 text = toPersianDigitsPadded(selectedDate.day, 2),
                                                 style = MaterialTheme.typography.titleLarge.copy(fontFamily = vazirmatnFontFamily),
                                                 fontWeight = FontWeight.Bold,
-                                                color = colorScheme.onSurface
-                                            )
-                                            Spacer(Modifier.width(6.dp))
-                                            Text(
-                                                text = jalaliMonthNames[selectedDate.month],
-                                                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = vazirmatnFontFamily),
-                                                color = colorScheme.onSurfaceVariant
+                                                color = colorScheme.onSurface,
+                                                fontSize = 22.sp,
+                                                textAlign = TextAlign.Center
                                             )
                                         }
                                         Text(
                                             text = toPersianDigits(selectedDate.year),
                                             style = MaterialTheme.typography.bodySmall.copy(fontFamily = vazirmatnFontFamily),
-                                            color = colorScheme.onSurfaceVariant
+                                            color = colorScheme.onSurfaceVariant,
+                                            textAlign = TextAlign.Center
                                         )
                                         AssistChip(
                                             onClick = {},
@@ -377,7 +374,7 @@ fun App() {
                                         )
                                     }
 
-                                    // Gregorian (center) - stacked Aug above 28, no میلادی label, Inter font
+                                    // Gregorian (center) - stacked month top / day / year, Inter, no label
                                     Column(
                                         modifier = Modifier.weight(1f),
                                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -421,38 +418,34 @@ fun App() {
                                         )
                                     }
 
-                                    // Hijri (leftmost) - هجری قمری label above month
+                                    // Hijri (leftmost) - stacked month top / day / year, same style, Vazirmatn, no label
                                     Column(
                                         modifier = Modifier.weight(1f),
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         verticalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
-                                        Text(
-                                            "هجری قمری",
-                                            style = MaterialTheme.typography.labelSmall.copy(fontFamily = vazirmatnFontFamily),
-                                            color = colorScheme.onSurfaceVariant,
-                                            textAlign = TextAlign.Center
-                                        )
-                                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                                            Text(
+                                                text = hijriMonthNames[selectedHijri.month],
+                                                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = vazirmatnFontFamily),
+                                                color = colorScheme.onSurfaceVariant,
+                                                textAlign = TextAlign.Center,
+                                                maxLines = 1
+                                            )
                                             Text(
                                                 text = toPersianDigits(selectedHijri.day),
                                                 style = MaterialTheme.typography.titleLarge.copy(fontFamily = vazirmatnFontFamily),
                                                 fontWeight = FontWeight.Bold,
-                                                color = colorScheme.onSurface
-                                            )
-                                            Spacer(Modifier.width(6.dp))
-                                            Text(
-                                                text = hijriMonthNames[selectedHijri.month],
-                                                style = MaterialTheme.typography.bodySmall.copy(fontFamily = vazirmatnFontFamily),
-                                                color = colorScheme.onSurfaceVariant,
-                                                textAlign = TextAlign.Center,
-                                                maxLines = 1
+                                                color = colorScheme.onSurface,
+                                                fontSize = 22.sp,
+                                                textAlign = TextAlign.Center
                                             )
                                         }
                                         Text(
                                             text = toPersianDigits(selectedHijri.year),
                                             style = MaterialTheme.typography.bodySmall.copy(fontFamily = vazirmatnFontFamily),
-                                            color = colorScheme.onSurfaceVariant
+                                            color = colorScheme.onSurfaceVariant,
+                                            textAlign = TextAlign.Center
                                         )
                                         AssistChip(
                                             onClick = {},

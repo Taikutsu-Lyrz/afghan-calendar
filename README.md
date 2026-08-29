@@ -6,7 +6,7 @@
 
 Fast • Offline • Dari / English • Material 3
 
-Current version: **1.0.2**
+Current version: **1.0.3**
 
 </div>
 
@@ -32,11 +32,30 @@ Current version: **1.0.2**
 |:---:|:---:|
 | ![Miladi light, Dari dates](.github/screenshots/miladi-light.jpg) | ![Miladi light, English dates](.github/screenshots/miladi-gregorian-light.jpg) |
 
+## Download
+
+Grab **v1.0.3** from [Releases](../../releases). Each file is explained below.
+
+| File | Platform | What it is |
+|---|---|---|
+| `AfghanCalendar-1.0.3.msi` | Windows | Recommended installer. Double-click and follow the wizard. No Store account. |
+| `AfghanCalendar-1.0.3.exe` | Windows | Same desktop app as an `.exe` installer. |
+| `AfghanCalendar-1.0.3.apk` | Android | Sideload APK. Not on Google Play. Allow "Install unknown apps" when asked. |
+| `AfghanCalendar-1.0.3-source.zip` | Source | Full project source. GitHub also offers a repo zip on the tag. |
+
+The app is **offline-first**: Shamsi (Jalali), Gregorian, and Hijri on one screen. No login, no tracking.
+
 ## Getting Started
+
+### Install on Windows
+
+1. Download `AfghanCalendar-1.0.3.msi` (or the `.exe`) from [Releases](../../releases)
+2. Run it and finish the installer
+3. Open **Afghan Calendar** from the Start menu. It works offline immediately
 
 ### Install on your phone
 
-1. Download the latest APK from [Releases](../../releases) (or build it yourself -- see below)
+1. Download `AfghanCalendar-1.0.3.apk` from [Releases](../../releases) (or build it yourself -- see below)
 2. Open the file on your Android phone and allow "Install from unknown sources" if asked
 3. Done -- the calendar works immediately, no setup needed
 
@@ -49,11 +68,14 @@ Requirements: **JDK 17+** and (for Android) the **Android SDK**.
 git clone https://github.com/Taikutsu-Lyrz/afghan-calendar.git
 cd afghan-calendar
 
-# Android APK  →  composeApp/build/outputs/apk/debug/composeApp-debug.apk
-./gradlew :composeApp:assembleDebug
+# Android APK  →  composeApp/build/outputs/apk/release/
+./gradlew :composeApp:assembleRelease
 
-# Or run the desktop version on your PC
+# Desktop preview
 ./gradlew :composeApp:run
+
+# Windows installer (must run on Windows)
+./gradlew :composeApp:packageMsi :composeApp:packageExe
 ```
 
 Install on a connected device via ADB:

@@ -6,6 +6,8 @@
 
 Fast • Offline • Dari / English • Material 3
 
+Current version: **1.0.2**
+
 </div>
 
 ---

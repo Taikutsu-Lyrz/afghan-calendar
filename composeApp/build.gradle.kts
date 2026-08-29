@@ -1,3 +1,5 @@
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
@@ -48,8 +50,8 @@ android {
         applicationId = "app.afghancalendar"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 3
+        versionName = "1.0.2"
     }
     packaging {
         resources {
@@ -75,5 +77,21 @@ android {
 compose.desktop {
     application {
         mainClass = "app.afghancalendar.MainKt"
+        nativeDistributions {
+            targetFormats(TargetFormat.Exe, TargetFormat.Msi)
+            packageName = "Afghan Calendar"
+            packageVersion = "1.0.2"
+            vendor = "Taikutsu Lyrz"
+            description = "Afghan Calendar — Shamsi, Miladi & Hijri in one place. Offline-first."
+            copyright = "© 2026 Taikutsu Lyrz"
+            // do NOT set iconFile unless a real ico exists; omit so default icon is used
+            windows {
+                // WiX for Msi, Inno Setup not required for Exe when using jpackage defaults? For Compose 1.7.3, TargetFormat.Msi uses WiX, Exe produces app-image + exe launcher. Use defaults.
+                // If iconFile needed, point to existing resource only if exists. Since no custom ico, omit.
+                shortcut = true
+                menuGroup = "Afghan Calendar"
+                // perUserInstall can be false for machine-wide; leave default
+            }
+        }
     }
 }

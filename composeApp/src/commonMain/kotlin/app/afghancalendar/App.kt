@@ -397,18 +397,29 @@ private fun MonthCard(
                     Icon(Icons.Filled.ChevronLeft, contentDescription = s.previous, modifier = Modifier.size(24.dp))
                 }
                 // Title shows main calendar + secondary calendar month
-                val secondaryText = remember(displayedYear, displayedMonth, mainCalendar) {
+                val secondaryText = remember(displayedYear, displayedMonth, mainCalendar, selectedJdn) {
+                    val firstJdn = when (mainCalendar) {
+                        MainCalendar.SHAMSI -> jalaliToJdn(displayedYear, displayedMonth, 1)
+                        MainCalendar.MILADI -> gregorianToJdn(displayedYear, displayedMonth, 1)
+                        MainCalendar.HIJRI -> hijriDateToJdn(displayedYear, displayedMonth, 1)
+                    }
+                    val monthLen = when (mainCalendar) {
+                        MainCalendar.SHAMSI -> jalaliMonthLength(displayedYear, displayedMonth)
+                        MainCalendar.MILADI -> gregorianMonthLength(displayedYear, displayedMonth)
+                        MainCalendar.HIJRI -> hijriMonthLength(displayedYear, displayedMonth)
+                    }
+                    val anchorJdn = selectedJdn.coerceIn(firstJdn, firstJdn + monthLen - 1)
                     when (mainCalendar) {
                         MainCalendar.SHAMSI -> {
-                            val g = jdnToGregorian(jalaliToJdn(displayedYear, displayedMonth, 15))
+                            val g = jdnToGregorian(anchorJdn)
                             "${gregorianMonthNamesEn[g.month]} ${g.year}"
                         }
                         MainCalendar.MILADI -> {
-                            val j = jdnToJalali(gregorianToJdn(displayedYear, displayedMonth, 15))
+                            val j = jdnToJalali(anchorJdn)
                             "${jalaliMonthNames[j.month]} ${toPersianDigits(j.year)}"
                         }
                         MainCalendar.HIJRI -> {
-                            val g = jdnToGregorian(hijriDateToJdn(displayedYear, displayedMonth, 15))
+                            val g = jdnToGregorian(anchorJdn)
                             "${gregorianMonthNamesEn[g.month]} ${g.year}"
                         }
                     }

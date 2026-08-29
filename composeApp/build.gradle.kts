@@ -26,6 +26,7 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation(libs.androidx.activity.compose)
+                implementation(libs.androidx.lifecycle.runtimeCompose)
             }
         }
         commonMain.dependencies {
@@ -35,7 +36,6 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(compose.materialIconsExtended)
         }
     }

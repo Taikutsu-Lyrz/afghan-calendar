@@ -50,8 +50,8 @@ android {
         applicationId = "app.afghancalendar"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.0.3"
+        versionCode = 5
+        versionName = "1.0.4"
     }
     packaging {
         resources {
@@ -80,7 +80,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Exe, TargetFormat.Msi)
             packageName = "Afghan Calendar"
-            packageVersion = "1.0.3"
+            packageVersion = "1.0.4"
             vendor = "Taikutsu Lyrz"
             description = "Afghan Calendar — Shamsi, Miladi & Hijri in one place. Offline-first."
             copyright = "© 2026 Taikutsu Lyrz"

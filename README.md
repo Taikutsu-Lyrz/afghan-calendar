@@ -6,7 +6,7 @@
 
 Fast • Offline • Dari / English • Material 3
 
-Current version: **1.0.3**
+Current version: **1.0.4**
 
 </div>
 
@@ -34,14 +34,14 @@ Current version: **1.0.3**
 
 ## Download
 
-Grab **v1.0.3** from [Releases](../../releases). Each file is explained below.
+Grab **v1.0.4** from [Releases](../../releases). Each file is explained below.
 
 | File | Platform | What it is |
 |---|---|---|
-| `AfghanCalendar-1.0.3.msi` | Windows | Recommended installer. Double-click and follow the wizard. No Store account. |
-| `AfghanCalendar-1.0.3.exe` | Windows | Same desktop app as an `.exe` installer. |
-| `AfghanCalendar-1.0.3.apk` | Android | Sideload APK. Not on Google Play. Allow "Install unknown apps" when asked. |
-| `AfghanCalendar-1.0.3-source.zip` | Source | Full project source. GitHub also offers a repo zip on the tag. |
+| `AfghanCalendar-1.0.4.msi` | Windows | Recommended installer. Double-click and follow the wizard. No Store account. |
+| `AfghanCalendar-1.0.4.exe` | Windows | Same desktop app as an `.exe` installer. |
+| `AfghanCalendar-1.0.4.apk` | Android | Sideload APK. Not on Google Play. Allow "Install unknown apps" when asked. |
+| `AfghanCalendar-1.0.4-source.zip` | Source | Full project source. GitHub also offers a repo zip on the tag. |
 
 The app is **offline-first**: Shamsi (Jalali), Gregorian, and Hijri on one screen. No login, no tracking.
 
@@ -49,13 +49,13 @@ The app is **offline-first**: Shamsi (Jalali), Gregorian, and Hijri on one scree
 
 ### Install on Windows
 
-1. Download `AfghanCalendar-1.0.3.msi` (or the `.exe`) from [Releases](../../releases)
+1. Download `AfghanCalendar-1.0.4.msi` (or the `.exe`) from [Releases](../../releases)
 2. Run it and finish the installer
 3. Open **Afghan Calendar** from the Start menu. It works offline immediately
 
 ### Install on your phone
 
-1. Download `AfghanCalendar-1.0.3.apk` from [Releases](../../releases) (or build it yourself -- see below)
+1. Download `AfghanCalendar-1.0.4.apk` from [Releases](../../releases) (or build it yourself -- see below)
 2. Open the file on your Android phone and allow "Install from unknown sources" if asked
 3. Done -- the calendar works immediately, no setup needed
 

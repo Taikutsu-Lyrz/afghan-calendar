@@ -387,7 +387,7 @@ private fun MonthCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 FilledTonalIconButton(
-                    onClick = { prevMonth() },
+                    onClick = { if (isShamsi || isHijri) nextMonth() else prevMonth() },
                     colors = IconButtonDefaults.filledTonalIconButtonColors(
                         containerColor = colorScheme.surface.copy(alpha = 0.85f),
                         contentColor = colorScheme.onSurface
@@ -450,7 +450,7 @@ private fun MonthCard(
                     )
                 }
                 FilledTonalIconButton(
-                    onClick = { nextMonth() },
+                    onClick = { if (isShamsi || isHijri) prevMonth() else nextMonth() },
                     colors = IconButtonDefaults.filledTonalIconButtonColors(
                         containerColor = colorScheme.surface.copy(alpha = 0.85f),
                         contentColor = colorScheme.onSurface

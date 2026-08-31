@@ -1,0 +1,196 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (for example v1.0.3). Leave empty to use the current versionName.'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      tag: ${{ steps.v.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            TAG="${GITHUB_REF_NAME}"
+          elif [[ -n "${{ github.event.inputs.tag }}" ]]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="v$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' composeApp/build.gradle.kts | head -n1)"
+          fi
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Releasing $TAG ($VERSION)"
+
+  windows:
+    needs: version
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Install WiX (MSI)
+        shell: pwsh
+        run: |
+          if (-not (Get-Command candle -ErrorAction SilentlyContinue)) {
+            choco install wixtoolset --no-progress -y
+          }
+      - name: Package Windows MSI/EXE
+        shell: bash
+        run: |
+          set +e
+          ./gradlew :composeApp:packageReleaseMsi :composeApp:packageReleaseExe --stacktrace
+          RC=$?
+          if [ $RC -ne 0 ]; then
+            ./gradlew :composeApp:packageMsi :composeApp:packageExe --stacktrace
+            RC=$?
+          fi
+          find composeApp/build -type f \( -name '*.msi' -o -name '*.exe' \) | tee /tmp/win-files.txt
+          exit $RC
+      - name: Stage Windows installers
+        shell: bash
+        run: |
+          mkdir -p dist
+          VERSION="${{ needs.version.outputs.version }}"
+          shopt -s globstar nullglob
+          for f in composeApp/build/**/*.msi; do
+            cp "$f" "dist/AfghanCalendar-${VERSION}.msi"
+            break
+          done
+          for f in composeApp/build/**/*.exe; do
+            # skip helper exes inside jpackage image if any
+            case "$f" in
+              *runtime*|*bin/*) continue ;;
+            esac
+            cp "$f" "dist/AfghanCalendar-${VERSION}.exe"
+            break
+          done
+          ls -la dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: dist/AfghanCalendar-*
+          if-no-files-found: error
+
+  android:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build Android APK
+        run: |
+          ./gradlew :composeApp:assembleRelease --stacktrace || ./gradlew :composeApp:assembleDebug --stacktrace
+      - name: Stage APK
+        run: |
+          mkdir -p dist
+          VERSION="${{ needs.version.outputs.version }}"
+          shopt -s globstar nullglob
+          apk=""
+          for f in composeApp/build/outputs/apk/**/*.apk; do
+            apk="$f"
+          done
+          if [[ -z "$apk" ]]; then
+            echo "No APK produced" >&2
+            find composeApp/build -name '*.apk' || true
+            exit 1
+          fi
+          cp "$apk" "dist/AfghanCalendar-${VERSION}.apk"
+          ls -la dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: dist/AfghanCalendar-*.apk
+          if-no-files-found: error
+
+  source:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Zip source (no build folders)
+        run: |
+          VERSION="${{ needs.version.outputs.version }}"
+          mkdir -p dist
+          git archive --format=zip --prefix="afghan-calendar-${VERSION}/" -o "dist/AfghanCalendar-${VERSION}-source.zip" HEAD
+          ls -la dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: source
+          path: dist/AfghanCalendar-*-source.zip
+
+  publish:
+    needs: [version, windows, android, source]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: List artifacts
+        run: find artifacts -type f -ls
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.version.outputs.tag }}
+          name: Afghan Calendar ${{ needs.version.outputs.version }}
+          generate_release_notes: true
+          files: artifacts/AfghanCalendar-*
+          fail_on_unmatched_files: true
+          body: |
+            Offline Shamsi, Gregorian, and Hijri calendar for Afghanistan. One app, three calendars, no account.
+
+            **1.0.3** ships Windows, Android, and source together.
+
+            ### What to download
+
+            | File | For | Notes |
+            |---|---|---|
+            | `AfghanCalendar-${{ needs.version.outputs.version }}.msi` | Windows | Recommended installer. Double-click, Next, done. |
+            | `AfghanCalendar-${{ needs.version.outputs.version }}.exe` | Windows | Same app as a standalone installer if you prefer .exe. |
+            | `AfghanCalendar-${{ needs.version.outputs.version }}.apk` | Android | Sideload. Not on Play Store. Allow install from unknown sources. |
+            | `AfghanCalendar-${{ needs.version.outputs.version }}-source.zip` | Developers | Full source. GitHub also attaches a repo zip/tarball to this tag. |
+
+            ### Install
+
+            **Windows:** download the `.msi` (or `.exe`) and run it. No Microsoft Store needed. The app is a desktop JVM calendar and works offline.
+
+            **Android:** download the `.apk`, open it on the phone, allow install from this source if asked. First launch is enough — no login.
+
+            **From source:** JDK 17+. Android SDK for the APK.
+            ```bash
+            ./gradlew :composeApp:assembleRelease
+            ./gradlew :composeApp:packageMsi :composeApp:packageExe   # Windows host
+            ```
+
+            ### About the app
+
+            - Shamsi (Jalali / هجری شمسی), Miladi (Gregorian), and Hijri (Qamari) side by side
+            - Local-first: all date math is on device, no network
+            - Dari and English, Vazirmatn + Inter fonts
+            - Material 3, light/dark, Afghan theme colors
+
+            Secondary month labels follow the **selected day** (not mid-month), so سنبله stays August on 29 Aug.
